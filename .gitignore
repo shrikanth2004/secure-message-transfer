@@ -1,0 +1,5 @@
+node_modules/
+uploads/*
+messages/*
+data/metadata.json
+.env

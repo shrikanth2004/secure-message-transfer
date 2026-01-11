@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Receive Message - SecureTransfer</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header Navigation -->
+        <header class="navbar">
+            <div class="navbar-content">
+                <a href="index.html" class="logo">🔒 SecureTransfer</a>
+                <nav class="breadcrumb">
+                    <a href="index.html">Home</a>
+                    <span class="breadcrumb-separator">/</span>
+                    <span>Receive</span>
+                </nav>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="form-section">
+            <div class="form-container">
+                <h1>Receive Message or File</h1>
+                <p class="subtitle">Enter the transfer code to access the shared message or file</p>
+
+                <!-- Code Input Form -->
+                <form class="transfer-form">
+                    <div class="form-group">
+                        <label for="transfer-code">Transfer Code</label>
+                        <input 
+                            type="text" 
+                            id="transfer-code" 
+                            name="transfer-code"
+                            placeholder="e.g., SEC-7K9M-2X4P-8W3Q"
+                            maxlength="19"
+                        >
+                        <small class="hint">Codes are case-insensitive and expire after 24 hours</small>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-large">
+                        Retrieve Message / File
+                    </button>
+                </form>
+
+                <!-- Content Display Section (shown after retrieval) -->
+                <div class="content-section hidden">
+                    <!-- Message Display -->
+                    <div class="message-card">
+                        <h2>Message</h2>
+                        <div class="message-content">
+                            <p>This is a sample message that was securely transferred. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+                        </div>
+                    </div>
+
+                    <!-- File Display -->
+                    <div class="file-card">
+                        <h2>File</h2>
+                        <div class="file-item">
+                            <div class="file-icon">📄</div>
+                            <div class="file-details">
+                                <p class="file-name">document.pdf</p>
+                                <p class="file-size">2.4 MB</p>
+                            </div>
+                            <a href="#" class="btn btn-secondary">Download</a>
+                        </div>
+                    </div>
+
+                    <!-- Security Info -->
+                    <div class="security-info">
+                        <p><strong>⏰ Expires:</strong> In 2 hours 14 minutes</p>
+                        <p><strong>⚠️ Important:</strong> This is a one-time access. The content will be deleted after you close this page.</p>
+                    </div>
+                </div>
+
+                <!-- Expiration Notice -->
+                <div class="info-box">
+                    <p><strong>💡 About Transfer Codes:</strong></p>
+                    <ul>
+                        <li>Codes are valid for 24 hours from generation</li>
+                        <li>Each code can be accessed only once</li>
+                        <li>All data is automatically deleted after expiration</li>
+                        <li>No account or registration required</li>
+                    </ul>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>&copy; 2026 SecureTransfer. Your privacy is our priority.</p>
+        </footer>
+        <script>
+  const form = document.querySelector('.transfer-form');
+const contentSection = document.querySelector('.content-section');
+const messageText = document.querySelector('.message-content p');
+const messageCard = document.querySelector('.message-card');
+const fileCard = document.querySelector('.file-card');
+const fileNameDisplay = document.querySelector('.file-name');
+const downloadBtn = document.querySelector('.file-item .btn-secondary');
+
+// Create and add the Copy Button to the Message Card
+const copyMsgBtn = document.createElement('button');
+copyMsgBtn.textContent = 'Copy Text';
+copyMsgBtn.className = 'btn btn-secondary';
+copyMsgBtn.style.marginTop = '10px';
+messageCard.appendChild(copyMsgBtn);
+
+form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const code = document.getElementById('transfer-code').value.trim().toUpperCase();
+
+    try {
+        const response = await fetch(`/api/receive/${code}`);
+        const data = await response.json();
+
+        if (response.ok) {
+            form.style.display = 'none';
+            contentSection.classList.remove('hidden');
+
+            if (data.message) {
+                messageCard.classList.remove('hidden');
+                messageText.textContent = data.message;
+            } else {
+                messageCard.classList.add('hidden');
+            }
+            
+            if (data.hasFile) {
+                fileCard.classList.remove('hidden');
+                fileNameDisplay.textContent = data.fileName;
+                downloadBtn.onclick = () => {
+                    window.location.href = `/api/download/${code}`;
+                };
+            } else {
+                fileCard.classList.add('hidden');
+            }
+        } else {
+            alert(data.error);
+        }
+    } catch (err) {
+        alert('Error retrieving data');
+    }
+});
+
+copyMsgBtn.addEventListener('click', () => {
+    navigator.clipboard.writeText(messageText.textContent);
+    alert('Message copied to clipboard!');
+});
+        </script>
+    </div>
+</body>
+</html>

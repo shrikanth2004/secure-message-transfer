@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Send Message - SecureTransfer</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header Navigation -->
+        <header class="navbar">
+            <div class="navbar-content">
+                <a href="index.html" class="logo">🔒 SecureTransfer</a>
+                <nav class="breadcrumb">
+                    <a href="index.html">Home</a>
+                    <span class="breadcrumb-separator">/</span>
+                    <span>Send</span>
+                </nav>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="form-section">
+            <div class="form-container">
+                <h1>Send Message or File</h1>
+                <p class="subtitle">Securely share your message or file with a unique transfer code</p>
+
+                <form class="transfer-form">
+                    <!-- Message Section -->
+                    <div class="form-group">
+                        <label for="message">Your Message</label>
+                        <textarea 
+                            id="message" 
+                            name="message"
+                            placeholder="Type your message here... (Optional)"
+                            rows="6"
+                        ></textarea>
+                        <small class="hint">Max 10,000 characters</small>
+                    </div>
+
+                    <!-- File Upload Section -->
+                    <div class="form-group">
+                        <label for="file-upload">Upload File</label>
+                        <div class="file-upload-wrapper">
+                            <input 
+                                type="file" 
+                                id="file-upload" 
+                                name="file-upload"
+                                class="file-input"
+                            >
+                            <div class="file-upload-area">
+                                <span class="file-upload-icon">📎</span>
+                                <p>Drag and drop your file here or click to browse</p>
+                                <small>PDF, images, documents up to 100MB</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Generate Code Button -->
+                    <button type="submit" class="btn btn-primary btn-large">
+                        Generate Transfer Code
+                    </button>
+                </form>
+
+                <!-- Success Message (displayed after generation) -->
+                <div class="success-section hidden">
+                    <div class="success-badge">✓ Code Generated Successfully</div>
+                    <div class="code-display">
+                        <p class="code-label">Your Transfer Code:</p>
+                        <div class="code-box">
+                            <code class="transfer-code">SEC-7K9M-2X4P-8W3Q</code>
+                            <button class="btn-copy">Copy Code</button>
+                        </div>
+                    </div>
+                    <div class="code-info">
+                        <p><strong>⏰ Expires in:</strong> 24 hours</p>
+                        <p><strong>👤 Access:</strong> One-time access only</p>
+                        <p><strong>🔄 Share this code:</strong> Send it via email, message, or any secure channel</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>&copy; 2026 SecureTransfer. Your privacy is our priority.</p>
+        </footer>
+        <script>
+    const form = document.querySelector('.transfer-form');
+const fileInput = document.getElementById('file-upload');
+const uploadArea = document.querySelector('.file-upload-area');
+const successSection = document.querySelector('.success-section');
+const codeBox = document.querySelector('.transfer-code');
+
+// Make the "Area" clickable to open file dialog
+uploadArea.addEventListener('click', () => fileInput.click());
+
+// Show filename when file is chosen
+fileInput.addEventListener('change', () => {
+    if (fileInput.files.length > 0) {
+        uploadArea.querySelector('p').textContent = `Selected: ${fileInput.files[0].name}`;
+    }
+});
+
+// Handle Drag and Drop
+uploadArea.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    uploadArea.style.borderColor = '#007bff';
+});
+
+uploadArea.addEventListener('dragleave', () => {
+    uploadArea.style.borderColor = '#ccc';
+});
+
+uploadArea.addEventListener('drop', (e) => {
+    e.preventDefault();
+    fileInput.files = e.dataTransfer.files;
+    uploadArea.querySelector('p').textContent = `Selected: ${fileInput.files[0].name}`;
+});
+
+// Handle Form Submission
+form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const message = document.getElementById('message').value;
+    const file = fileInput.files[0];
+
+    if (!message.trim() && !file) {
+        alert("Please enter a message or select a file.");
+        return;
+    }
+
+    const formData = new FormData();
+    if (message.trim()) formData.append('message', message);
+    if (file) formData.append('file', file);
+
+    try {
+        const response = await fetch('/api/send', {
+            method: 'POST',
+            body: formData
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+            form.style.display = 'none';
+            successSection.classList.remove('hidden');
+            codeBox.textContent = result.transferCode;
+        } else {
+            alert(result.error);
+        }
+    } catch (err) {
+        alert('Server connection error');
+    }
+});
+        </script>
+    </div>
+</body>
+</html>
